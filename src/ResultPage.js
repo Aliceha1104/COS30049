@@ -6,14 +6,14 @@ function ResultPage() {
   const navigate = useNavigate();
   const { input } = location.state || {}; // Destructure the input values
 
-  // Determine popular size options based on bedrooms
+  // Function to determine popular house sizes based on the number of bedrooms
   const getPopularSizes = (bedrooms) => {
-    if (bedrooms <= 2) return [50, 75, 100];
-    if (bedrooms <= 4) return [100, 150, 200];
-    return [200, 250, 300]; // Larger homes
+    if (bedrooms <= 2) return [130]; // Popular size for 1-2 Rooms
+    if (bedrooms <= 4) return [535]; // Popular size for 3-4 Rooms
+    return [677.5]; // Popular size for 5+ Rooms
   };
 
-  const popularSizes = getPopularSizes(input.bedrooms);
+  const popularSizes = getPopularSizes(input.bedrooms); // Get relevant sizes
 
   return (
     <div className="result-container">
@@ -22,7 +22,7 @@ function ResultPage() {
       <p>Bathrooms: {input.bathrooms}</p>
       <p>Parking Spaces: {input.parking}</p>
 
-      <h2>Select a Popular Size (sqm):</h2>
+      <h2>Average landsize (sqm):</h2>
       <ul>
         {popularSizes.map((size, index) => (
           <li key={index}>{size} sqm</li>
@@ -35,3 +35,4 @@ function ResultPage() {
 }
 
 export default ResultPage;
+

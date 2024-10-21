@@ -89,9 +89,9 @@ function PropertyForm() {
         ))}
       </datalist></label>
 
-      <label>Bedrooms: <input type="number" name="bedrooms" min="0" onChange={handleChange} required /></label>
-      <label>Bathrooms: <input type="number" name="bathrooms" min="0"  onChange={handleChange} required /></label>
-      <label>Parking Spaces: <input type="number" name="parking" min="0"  onChange={handleChange} /></label>
+      <label>Bedrooms: <input type="number" name="bedrooms" min="0" max="8" onChange={handleChange} required /></label>
+      <label>Bathrooms: <input type="number" name="bathrooms" min="0" max="4" onChange={handleChange} required /></label>
+      <label>Parking Spaces: <input type="number" name="parking" min="0" max="4" onChange={handleChange} /></label>
       <button type="submit">Predict</button>
     </form>
   );

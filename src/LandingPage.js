@@ -16,7 +16,6 @@ function LandingPage() {
   return (
     <div className="landing-page">
 
-
       {/* Hero Section */}
       <div className="hero-section">
         <h1>Explore Melbourne's Housing Market</h1>
