@@ -4,17 +4,17 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 
 # Load the dataset
-data = pd.read_csv('4cleaned_data.csv')
+data = pd.read_csv('data.csv')
 
 # Print the columns to verify the column names
 print("Columns in the dataset:", data.columns)
 
-# Assuming the target variable is 'Price' and the rest are features
-if 'Price' not in data.columns:
-    raise KeyError("The column 'Price' is not found in the dataset. Please check the column names.")
+# Assuming the target variable is 'median_price' and the rest are features
+if 'median_price' not in data.columns:
+    raise KeyError("The column 'median_price' is not found in the dataset. Please check the column names.")
 
-X = data.drop('Price', axis=1)
-y = data['Price']
+X = data.drop('median_price', axis=1)
+y = data['median_price']
 
 # Convert categorical variables to dummy variables
 X = pd.get_dummies(X, drop_first=True)
