@@ -5,6 +5,19 @@ import joblib
 import numpy as np
 from tensorflow.keras.models import load_model
 import os
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the House Price Prediction API"}
 
 app = FastAPI()
 
@@ -21,20 +34,22 @@ def safe_load_model(model_path, loader_func):
         return None
 
 # Load models
-xgb_model = safe_load_model('xgboost_model.joblib', joblib.load)
-rf_model = safe_load_model('random_forest_model.joblib', joblib.load)
-nn_model = safe_load_model('neural_network_model.h5', load_model)
-nn_preprocessor = safe_load_model('nn_preprocessor.joblib', joblib.load)
-nn_scaler_y = safe_load_model('nn_scaler_y.joblib', joblib.load)
+xgb_model = safe_load_model('aimodels/xgboost_model.joblib', joblib.load)
+rf_model = safe_load_model('aimodels/random_forest_model.joblib', joblib.load)
+nn_model = safe_load_model('aimodels/neural_network_model.h5', load_model)
+nn_preprocessor = safe_load_model('aimodels/nn_preprocessor.joblib', joblib.load)
+nn_scaler_y = safe_load_model('aimodels/nn_scaler_y.joblib', joblib.load)
 
 class PredictionInput(BaseModel):
-    # Define input fields based on your features
+    Suburb: str
+    Address: str
     Rooms: int
     Type: str
     Method: str
     SellerG: str
     Distance: float
     Postcode: float
+    Bedroom2: float
     Bathroom: float
     Car: float
     Landsize: float
@@ -44,6 +59,7 @@ class PredictionInput(BaseModel):
     Lattitude: float
     Longtitude: float
     Regionname: str
+    Propertycount: float
 
 @app.post("/predict")
 async def predict(input: PredictionInput):
@@ -74,10 +90,6 @@ async def predict(input: PredictionInput):
             raise HTTPException(status_code=500, detail="No models available for prediction")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-@app.get("/")
-async def root():
-    return {"message": "House Price Prediction API"}
 
 if __name__ == "__main__":
     import uvicorn
