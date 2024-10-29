@@ -1,0 +1,75 @@
+.stat-card {
+    background-color: var(--white);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stat-title {
+    color: var(--gray-500);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+  }
+  
+  .stat-change {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .stat-change.positive {
+    color: var(--green-500);
+  }
+  
+  .stat-change.negative {
+    color: var(--red-500);
+  }
+  
+  .stat-change span {
+    margin-left: 0.25rem;
+  }
+  
+  /* Loading skeleton */
+  .skeleton {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .skeleton-title {
+    height: 1rem;
+    background-color: var(--gray-200);
+    border-radius: 0.25rem;
+    width: 50%;
+    margin-bottom: 1rem;
+  }
+  
+  .skeleton-value {
+    height: 2rem;
+    background-color: var(--gray-200);
+    border-radius: 0.25rem;
+    width: 75%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .skeleton-change {
+    height: 1rem;
+    background-color: var(--gray-200);
+    border-radius: 0.25rem;
+    width: 25%;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: .5;
+    }
+  }

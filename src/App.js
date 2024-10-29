@@ -1,13 +1,20 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import logo from './UMD.svg';
+import logo from './pages/UMD.svg';
 import './App.css';
-import LandingPage from './LandingPage';
-import PropertyForm from './PropertyForm';
-import ChartPage from './ChartPage';
-import AboutPage from './AboutPage'; 
-import ResultPage from './ResultPage';
+import LandingPage from './pages/LandingPage';
+import PropertyForm from './pages/PropertyForm';
+import ChartPage from './pages/ChartPage';
+import AboutPage from './pages/AboutPage'; 
+import ResultPage from './pages/ResultPage';
+
+
+const exampleData = {
+  values: [3, 2, 2, 150, 850000], // Example: 3 Bedrooms, 2 Bathrooms, 2 Parking spaces, 150 sqm, $850,000 predicted price
+  predictedPrice: 850000, // Displayed at the top of the chart
+};
+
 
 function App() {
   return (
@@ -26,7 +33,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/form" element={<PropertyForm />} />
-          <Route path="/chart" element={<ChartPage />} />
+          <Route path="/chart" element={<ChartPage chartData={exampleData} />} />
           <Route path="/about"element={<AboutPage />} />
           <Route path="/result" element={<ResultPage />} />
 

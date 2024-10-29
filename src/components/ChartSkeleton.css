@@ -1,0 +1,33 @@
+.chart-skeleton {
+    background-color: var(--white);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .chart-skeleton-title {
+    height: 1rem;
+    background-color: var(--gray-200);
+    border-radius: 0.25rem;
+    width: 33.333%;
+    margin-bottom: 1rem;
+  }
+  
+  .chart-skeleton-content {
+    height: 16rem;
+    background-color: var(--gray-200);
+    border-radius: 0.25rem;
+  }
+  
+  .chart-skeleton {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: .5;
+    }
+  }
