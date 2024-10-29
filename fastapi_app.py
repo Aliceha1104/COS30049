@@ -7,6 +7,8 @@ from tensorflow.keras.models import load_model
 import os
 from fastapi.middleware.cors import CORSMiddleware
 
+app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows all origins
@@ -18,8 +20,6 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "Welcome to the House Price Prediction API"}
-
-app = FastAPI()
 
 # Function to safely load a model
 def safe_load_model(model_path, loader_func):

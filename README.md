@@ -4,4 +4,4 @@ to run the backend run
 
 make sure to pip install -r requirements.txt first
 
-then run ```python app.py```
+then run ```python fastapi_app.py```
