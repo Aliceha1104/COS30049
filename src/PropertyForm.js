@@ -1,15 +1,42 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // If using react-router for navigation
+import { useNavigate } from 'react-router-dom';
 
 function PropertyForm() {
-  const navigate = useNavigate(); // Use navigation to move to the result page
+  const [input, setInput] = useState({ bedrooms: '', bathrooms: '', parking: '' });
+  const navigate = useNavigate();
 
-  const [input, setInput] = useState({
-    locations: '',
-    bedrooms: '',
-    bathrooms: '',
-    parking: '',
-  });
+  const validateInput = () => {
+    const { bedrooms, bathrooms, parking } = input;
+    if (!bedrooms || !bathrooms || !parking) {
+      alert('Please fill in all fields');
+      return false;
+    }
+    if (isNaN(bedrooms) || isNaN(bathrooms) || isNaN(parking)) {
+      alert('Please enter valid numbers');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateInput()) return;
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(input),
+      });
+      const data = await response.json();
+      navigate('/result', { state: { input, prediction: data.prediction } });
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while making the prediction. Please try again.');
+    }
+  };
 
   const suburbs = [
     'Abbotsford', 'Aberfeldie', 'Airport West', 'Albanvale', 'Albert Park', 'Albion', 'Alphington', 'Altona', 'Altona Meadows', 'Altona North', 
@@ -68,34 +95,50 @@ function PropertyForm() {
     'Wheelers Hill', 'Williams Landing', 'Williamstown', 'Williamstown North',
     'Windsor', 'Wollert', 'Wonga Park', 'Wyndham Vale', 'Yallambie', 'Yarraville'
   ];
-  
 
   const handleChange = (e) => {
-    setInput({ ...input, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    navigate('/result', { state: { input } });
+    const { name, value } = e.target;
+    setInput(prevInput => ({ ...prevInput, [name]: value }));
   };
 
   return (
-    <form onSubmit={handleSubmit} className="form-container">
-      <label>Locations: <input
-          list="locations" name="location" value={input.location} onChange={handleChange} required placeholder="Enter or select a location"
-        /><datalist id="locations">
-        {suburbs.map((location, index) => (
-          <option key={index} value={location} />
-        ))}
-      </datalist></label>
-
-      <label>Bedrooms: <input type="number" name="bedrooms" min="0" max="8" onChange={handleChange} required /></label>
-      <label>Bathrooms: <input type="number" name="bathrooms" min="0" max="4" onChange={handleChange} required /></label>
-      <label>Parking Spaces: <input type="number" name="parking" min="0" max="4" onChange={handleChange} /></label>
-      <button type="submit">Predict</button>
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label htmlFor="bedrooms">Bedrooms:</label>
+        <input
+          type="number"
+          id="bedrooms"
+          name="bedrooms"
+          value={input.bedrooms}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div>
+        <label htmlFor="bathrooms">Bathrooms:</label>
+        <input
+          type="number"
+          id="bathrooms"
+          name="bathrooms"
+          value={input.bathrooms}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div>
+        <label htmlFor="parking">Parking Spaces:</label>
+        <input
+          type="number"
+          id="parking"
+          name="parking"
+          value={input.parking}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <button type="submit">Predict Price</button>
     </form>
   );
 }
 
 export default PropertyForm;
-
