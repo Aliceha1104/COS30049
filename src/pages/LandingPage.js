@@ -4,7 +4,7 @@ import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './LandingPage.css'; // Custom CSS for styling
-
+import { Link } from 'react-router-dom';
 const propertyLocations = [
   { name: 'Melbourne City Center', position: [-37.8136, 144.9631] },
   { name: 'Southbank', position: [-37.822, 144.965] },
@@ -22,7 +22,7 @@ function LandingPage() {
         <p>
           Discover the best places to live and invest in Melbourne with up-to-date property insights and housing trends.
         </p>
-        <button className="explore-button">View All Properties</button>
+        <Link to="/form" className="explore-button">View All Properties</Link>
       </div>
 
       {/* Map Section */}
