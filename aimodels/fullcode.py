@@ -69,7 +69,8 @@ xgb_model = XGBRegressor(learning_rate=0.05, n_estimators=500, max_depth=6, subs
 model_pipeline = Pipeline(steps=[('preprocessor', preprocessing_pipeline), ('xgb_model', xgb_model)])
 model_pipeline.fit(X_train, y_train)
 predictions = model_pipeline.predict(X_test)
-
+import joblib
+joblib.dump(model_pipeline, 'xgboost_model.joblib')
 
 # Model Evaluation
 mse = mean_squared_error(y_test, predictions)

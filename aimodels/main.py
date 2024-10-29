@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 
 # Load the dataset
-data = pd.read_csv('data.csv')
+data = pd.read_csv('4cleaned_data.csv')
 
 # Print the columns to verify the column names
 print("Columns in the dataset:", data.columns)
@@ -46,6 +46,9 @@ print(f'Average cross-validation MSE: {-cv_scores.mean()}')
 
 # Train the model
 model.fit(X_train, y_train)
+
+import joblib
+joblib.dump(model, 'random_forest_model.joblib')
 
 # Make predictions
 y_pred = model.predict(X_test)
