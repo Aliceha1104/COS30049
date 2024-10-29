@@ -98,6 +98,7 @@ def create_model():
 model = create_model()
 model.fit(X, y, epochs=100, batch_size=32, validation_split=0.2, verbose=1)
 
+import joblib
 model.save('neural_network_model.h5')
 joblib.dump(preprocessor, 'nn_preprocessor.joblib')
 joblib.dump(scaler_y, 'nn_scaler_y.joblib')
