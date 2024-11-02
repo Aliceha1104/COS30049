@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import pandas as pd
 import joblib
@@ -17,11 +18,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-@app.get("/")
-async def root():
-    return {"message": "Welcome to the House Price Prediction API"}
-
-# Function to safely load a model
+# Load models
 def safe_load_model(model_path, loader_func):
     if os.path.exists(model_path):
         try:
@@ -33,13 +30,13 @@ def safe_load_model(model_path, loader_func):
         print(f"Model file not found: {model_path}")
         return None
 
-# Load models
 xgb_model = safe_load_model('aimodels/xgboost_model.joblib', joblib.load)
 rf_model = safe_load_model('aimodels/random_forest_model.joblib', joblib.load)
 nn_model = safe_load_model('aimodels/neural_network_model.h5', load_model)
 nn_preprocessor = safe_load_model('aimodels/nn_preprocessor.joblib', joblib.load)
 nn_scaler_y = safe_load_model('aimodels/nn_scaler_y.joblib', joblib.load)
 
+# Define the prediction input model
 class PredictionInput(BaseModel):
     Suburb: str
     Address: str
@@ -56,11 +53,16 @@ class PredictionInput(BaseModel):
     BuildingArea: float
     YearBuilt: float
     CouncilArea: str
-    Lattitude: float
+    Lattitude: float 
     Longtitude: float
     Regionname: str
     Propertycount: float
+    sale_year: int  
+    transaction_count: int  
+   
 
+
+# Define the predict endpoint
 @app.post("/predict")
 async def predict(input: PredictionInput):
     try:
@@ -90,6 +92,9 @@ async def predict(input: PredictionInput):
             raise HTTPException(status_code=500, detail="No models available for prediction")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+# Mount the build folder as static files
+app.mount("/", StaticFiles(directory="build", html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
