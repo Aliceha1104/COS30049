@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import pandas as pd
 import joblib
@@ -10,15 +11,22 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Load models
+# Serve static files
+app.mount("/static", StaticFiles(directory="build/static"), name="static")
+
+@app.get("/")
+async def root():
+    return FileResponse("build/index.html")
+
 def safe_load_model(model_path, loader_func):
     if os.path.exists(model_path):
         try:
@@ -30,13 +38,18 @@ def safe_load_model(model_path, loader_func):
         print(f"Model file not found: {model_path}")
         return None
 
+# Load models
+# Load models
 xgb_model = safe_load_model('aimodels/xgboost_model.joblib', joblib.load)
 rf_model = safe_load_model('aimodels/random_forest_model.joblib', joblib.load)
 nn_model = safe_load_model('aimodels/neural_network_model.h5', load_model)
 nn_preprocessor = safe_load_model('aimodels/nn_preprocessor.joblib', joblib.load)
 nn_scaler_y = safe_load_model('aimodels/nn_scaler_y.joblib', joblib.load)
 
-# Define the prediction input model
+if not xgb_model or not rf_model or not nn_model or not nn_preprocessor or not nn_scaler_y:
+    print("One or more models failed to load.")
+
+
 class PredictionInput(BaseModel):
     Suburb: str
     Address: str
@@ -53,48 +66,96 @@ class PredictionInput(BaseModel):
     BuildingArea: float
     YearBuilt: float
     CouncilArea: str
-    Lattitude: float 
+    Lattitude: float
     Longtitude: float
     Regionname: str
     Propertycount: float
-    sale_year: int  
-    transaction_count: int  
-   
 
+def preprocess_input(input_data: PredictionInput):
+    """Preprocess the input data to match model requirements."""
+    # Convert input to DataFrame
+    input_df = pd.DataFrame([input_data.dict()])
+    
+    # Create dummy variables for categorical columns
+    # Type dummies
+    type_dummies = pd.get_dummies(input_df['Type'], prefix='type')
+    input_df = pd.concat([input_df, type_dummies], axis=1)
+    
+    # Method dummies
+    method_dummies = pd.get_dummies(input_df['Method'], prefix='method')
+    input_df = pd.concat([input_df, method_dummies], axis=1)
+    
+    # SellerG dummies
+    seller_dummies = pd.get_dummies(input_df['SellerG'], prefix='seller')
+    input_df = pd.concat([input_df, seller_dummies], axis=1)
+    
+    # Regionname dummies
+    region_dummies = pd.get_dummies(input_df['Regionname'], prefix='region')
+    input_df = pd.concat([input_df, region_dummies], axis=1)
+    
+    # CouncilArea dummies
+    council_dummies = pd.get_dummies(input_df['CouncilArea'], prefix='council')
+    input_df = pd.concat([input_df, council_dummies], axis=1)
+    
+    # Add derived features
+    input_df['sale_year'] = 2024  # Current year
+    input_df['transaction_count'] = input_df['Propertycount']  # Use actual property count
+    
+    # Select numerical features
+    numerical_features = [
+        'Rooms', 'Distance', 'Postcode', 'Bedroom2', 'Bathroom', 'Car',
+        'Landsize', 'BuildingArea', 'YearBuilt', 'Lattitude', 'Longtitude',
+        'Propertycount', 'sale_year', 'transaction_count'
+    ]
+    
+    # Combine all features
+    model_features = numerical_features + [col for col in input_df.columns 
+                                         if col.startswith(('type_', 'method_', 'seller_', 'region_', 'council_'))]
+    
+    return input_df[model_features]
 
-# Define the predict endpoint
 @app.post("/predict")
 async def predict(input: PredictionInput):
     try:
-        # Convert input to DataFrame
-        input_df = pd.DataFrame([input.dict()])
+        # Preprocess input data
+        processed_input = preprocess_input(input)
         
         predictions = {}
-        
+
+        # Make predictions with each model
         if xgb_model:
-            xgb_pred = xgb_model.predict(input_df)[0]
-            predictions["xgboost_prediction"] = float(xgb_pred)
-        
+            try:
+                xgb_pred = xgb_model.predict(processed_input)[0]
+                predictions["xgboost_prediction"] = float(xgb_pred)
+            except Exception as e:
+                print(f"XGBoost prediction error: {str(e)}")
+
         if rf_model:
-            rf_pred = rf_model.predict(input_df)[0]
-            predictions["random_forest_prediction"] = float(rf_pred)
-        
+            try:
+                rf_pred = rf_model.predict(processed_input)[0]
+                predictions["random_forest_prediction"] = float(rf_pred)
+            except Exception as e:
+                print(f"Random Forest prediction error: {str(e)}")
+
         if nn_model and nn_preprocessor and nn_scaler_y:
-            nn_input = nn_preprocessor.transform(input_df)
-            nn_pred = nn_model.predict(nn_input)
-            nn_pred = nn_scaler_y.inverse_transform(nn_pred)[0][0]
-            predictions["neural_network_prediction"] = float(nn_pred)
-        
+            try:
+                nn_input = nn_preprocessor.transform(processed_input)
+                nn_pred = nn_model.predict(nn_input)
+                nn_pred = nn_scaler_y.inverse_transform(nn_pred)[0][0]
+                predictions["neural_network_prediction"] = float(nn_pred)
+            except Exception as e:
+                print(f"Neural Network prediction error: {str(e)}")
+
         if predictions:
             predictions["ensemble_prediction"] = np.mean(list(predictions.values()))
             return predictions
         else:
             raise HTTPException(status_code=500, detail="No models available for prediction")
+
     except Exception as e:
+        print(f"Prediction error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
-# Mount the build folder as static files
-app.mount("/", StaticFiles(directory="build", html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
